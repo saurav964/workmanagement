@@ -12,4 +12,6 @@ public class AssignByReferenceRequest {
     private ReferenceType referenceType;
     private Long assigneeId;
 
+
+
 }

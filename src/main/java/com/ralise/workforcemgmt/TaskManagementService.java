@@ -103,6 +103,8 @@ public class TaskManagementService implements TaskManagementServiceimpl {
 
             if (item.getDescription() != null) task.setDescription(item.getDescription());
             if (item.getTaskStatus() != null) task.setStatus(item.getTaskStatus());
+            if(item.getPriority() != null) task.setPriority(item.getPriority());
+            if(item.getTaskDeadlineTime() != null) task.setTaskDeadlineTime(item.getTaskDeadlineTime());
 
             if (item.getAssignee() != null) {
                 Staff staff = taskMapper.toModel(item.getAssignee());

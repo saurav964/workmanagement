@@ -28,8 +28,12 @@ public enum Task {
 
 
     public static List<Task> getTasksByReferenceType(ReferenceType referenceType) {
+        if (referenceType == null) {
+            throw new IllegalArgumentException("ReferenceType must not be null");
+        }
         return Arrays.stream(Task.values())
                 .filter(task -> task.getApplicableReferenceTypes().contains(referenceType))
                 .collect(Collectors.toList());
     }
+
 }

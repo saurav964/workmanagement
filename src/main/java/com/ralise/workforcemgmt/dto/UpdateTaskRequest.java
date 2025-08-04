@@ -3,6 +3,7 @@ package com.ralise.workforcemgmt.dto;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.ralise.workforcemgmt.model.enums.Priority;
 import com.ralise.workforcemgmt.model.enums.TaskStatus;
 import lombok.Data;
 
@@ -20,6 +21,8 @@ public class UpdateTaskRequest {
         private TaskStatus taskStatus;
         private String description;
         private StaffDto assignee;
+        private Priority priority;
+        private Long taskDeadlineTime;
     }
 
 
