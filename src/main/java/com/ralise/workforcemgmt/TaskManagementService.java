@@ -70,7 +70,7 @@ public class TaskManagementService implements TaskManagementServiceimpl {
             task.setReferenceId(item.getReferenceId());
             task.setReferenceType(item.getReferenceType());
             task.setTask(item.getTask());
-            task.setAssignee(staff);  // Set the Staff object
+            task.setAssignee(staff);  
             task.setPriority(item.getPriority());
             task.setTaskDeadlineTime(item.getTaskDeadlineTime());
             task.setStatus(TaskStatus.ASSIGNED);
@@ -79,7 +79,7 @@ public class TaskManagementService implements TaskManagementServiceimpl {
             taskList.add(taskRepository.save(task));
         }
 
-        // Map and attach staff to each DTO explicitly
+    
         List<TaskManagementDto> dtoList = new ArrayList<>();
         for (TaskManagement task : taskList) {
             TaskManagementDto dto = taskMapper.modelToDto(task);
