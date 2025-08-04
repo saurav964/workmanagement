@@ -1,5 +1,6 @@
 package com.ralise.workforcemgmt.repository;
 
+import com.ralise.workforcemgmt.model.Staff;
 import com.ralise.workforcemgmt.model.TaskManagement;
 import com.ralise.workforcemgmt.model.enums.Priority;
 import com.ralise.workforcemgmt.model.enums.ReferenceType;
@@ -18,34 +19,41 @@ import java.util.stream.Collectors;
 public class InMemoryTaskRepository  implements TaskRepository {
     private final Map<Long, TaskManagement> taskStore = new ConcurrentHashMap<>();
     private final AtomicLong idCounter = new AtomicLong(0);
+    private final InMemoryStaffRepository staffRepository;
 
-
-    public InMemoryTaskRepository() {
-        // Seed data
-        createSeedTask(101L, ReferenceType.ORDER, Task.CREATE_INVOICE, 1L, TaskStatus.ASSIGNED, Priority.HIGH);
-        createSeedTask(101L, ReferenceType.ORDER, Task.ARRANGE_PICKUP, 1L, TaskStatus.COMPLETED, Priority.HIGH);
-        createSeedTask(102L, ReferenceType.ORDER, Task.CREATE_INVOICE, 2L, TaskStatus.ASSIGNED, Priority.MEDIUM);
-        createSeedTask(201L, ReferenceType.ENTITY, Task.ASSIGN_CUSTOMER_TO_SALES_PERSON, 2L, TaskStatus.ASSIGNED, Priority.LOW);
-        createSeedTask(201L, ReferenceType.ENTITY, Task.ASSIGN_CUSTOMER_TO_SALES_PERSON, 3L, TaskStatus.ASSIGNED, Priority.LOW); // Duplicate for Bug #1
-        createSeedTask(103L, ReferenceType.ORDER, Task.COLLECT_PAYMENT, 1L, TaskStatus.CANCELLED, Priority.MEDIUM); // For Bug #2
+    public InMemoryTaskRepository(InMemoryStaffRepository staffRepository) {
+        this.staffRepository = staffRepository;
+        staffRepository.save(new Staff(1L, "Saurav Gupta", "Engineer", "Operations"));
+        staffRepository.save(new Staff(2L, "Anjali Mehta", "Manager", "Finance"));
+        staffRepository.save(new Staff(3L, "Rahul Sharma", "Sales Executive", "Sales"));
+        staffRepository.save(new Staff(4L, "Rahul Sharma", "Sales Executive", "Sales"));
+        createSeedTask(102L, ReferenceType.ORDER, Task.CREATE_INVOICE, 1L, TaskStatus.ASSIGNED, Priority.MEDIUM);
+        createSeedTask(201L, ReferenceType.ENTITY, Task.ASSIGN_CUSTOMER_TO_SALES_PERSON, 3L, TaskStatus.ASSIGNED, Priority.LOW); // For Bug #2
     }
 
 
     private void createSeedTask(Long refId, ReferenceType refType, Task task, Long assigneeId, TaskStatus status, Priority priority) {
         long newId = idCounter.incrementAndGet();
+
+        Staff staff = null;
+        if (assigneeId != null) {
+            staff = staffRepository.findById(assigneeId)
+                    .orElseThrow(() -> new RuntimeException("Staff with ID " + assigneeId + " not found"));
+        }
+
         TaskManagement newTask = new TaskManagement();
         newTask.setId(newId);
         newTask.setReferenceId(refId);
         newTask.setReferenceType(refType);
         newTask.setTask(task);
-        newTask.setAssigneeId(assigneeId);
+        newTask.setAssignee(staff); // ✅ Set full staff object
         newTask.setStatus(status);
         newTask.setPriority(priority);
         newTask.setDescription("This is a seed task.");
-        newTask.setTaskDeadlineTime(System.currentTimeMillis() + 86400000); // 1 day from now
+        newTask.setTaskDeadlineTime(System.currentTimeMillis() + 86400000);
+
         taskStore.put(newId, newTask);
     }
-
 
     @Override
     public Optional<TaskManagement> findById(Long id) {

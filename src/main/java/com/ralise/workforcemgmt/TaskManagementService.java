@@ -42,9 +42,8 @@ public class TaskManagementService implements TaskManagementServiceimpl {
         TaskManagementDto dto = taskMapper.modelToDto(task);
 
         if (task.getAssignee() != null) {
-            Staff staff = staffRepository.findById(task.getAssignee().getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Staff not found with id: " + task.getAssignee().getId()));
-            dto.setStaff(staffMapper.modelToDto(staff));
+            staffRepository.findById(task.getAssignee().getId())
+                    .ifPresent(staff -> dto.setStaff(staffMapper.modelToDto(staff)));
         }
 
         return dto;
@@ -62,15 +61,16 @@ public class TaskManagementService implements TaskManagementServiceimpl {
         }
 
         List<TaskManagement> taskList = new ArrayList<>();
+
         for (TaskCreateRequest.RequestItem item : request.getRequests()) {
             Staff staff = taskMapper.toModel(item.getAssignee());
-            staffRepository.save(staff);
+            staffRepository.save(staff);  // Save staff in-memory
 
             TaskManagement task = new TaskManagement();
             task.setReferenceId(item.getReferenceId());
             task.setReferenceType(item.getReferenceType());
             task.setTask(item.getTask());
-            task.setAssignee(staff);
+            task.setAssignee(staff);  // Set the Staff object
             task.setPriority(item.getPriority());
             task.setTaskDeadlineTime(item.getTaskDeadlineTime());
             task.setStatus(TaskStatus.ASSIGNED);
@@ -79,7 +79,18 @@ public class TaskManagementService implements TaskManagementServiceimpl {
             taskList.add(taskRepository.save(task));
         }
 
-        return taskMapper.modelListToDtoList(taskList);
+        // Map and attach staff to each DTO explicitly
+        List<TaskManagementDto> dtoList = new ArrayList<>();
+        for (TaskManagement task : taskList) {
+            TaskManagementDto dto = taskMapper.modelToDto(task);
+            if (task.getAssignee() != null) {
+                staffRepository.findById(task.getAssignee().getId())
+                        .ifPresent(staff -> dto.setStaff(staffMapper.modelToDto(staff)));
+            }
+            dtoList.add(dto);
+        }
+
+        return dtoList;
     }
 
     @Override
@@ -100,11 +111,19 @@ public class TaskManagementService implements TaskManagementServiceimpl {
             }
 
             taskRepository.save(task);
-            updatedTasks.add(taskMapper.modelToDto(task));
+
+            TaskManagementDto dto = taskMapper.modelToDto(task);
+            if (task.getAssignee() != null) {
+                staffRepository.findById(task.getAssignee().getId())
+                        .ifPresent(staff -> dto.setStaff(staffMapper.modelToDto(staff)));
+            }
+
+            updatedTasks.add(dto);
         }
 
         return updatedTasks;
     }
+
 
     @Override
     public String assignByReference(AssignByReferenceRequest request) {
