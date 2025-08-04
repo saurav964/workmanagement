@@ -46,7 +46,7 @@ public class InMemoryTaskRepository  implements TaskRepository {
         newTask.setReferenceId(refId);
         newTask.setReferenceType(refType);
         newTask.setTask(task);
-        newTask.setAssignee(staff); // ✅ Set full staff object
+        newTask.setAssignee(staff); 
         newTask.setStatus(status);
         newTask.setPriority(priority);
         newTask.setDescription("This is a seed task.");
